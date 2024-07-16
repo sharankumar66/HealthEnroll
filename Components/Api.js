@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, Alert, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView, StatusBar, Dimensions } from 'react-native';
+import Modal from 'react-native-modal';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import Location from './Loc';
+import UploadImage from './Add_image';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import Scan from './Scan';
+import { useNavigation } from '@react-navigation/native';
 
 const EnrollmentForm = () => {
   const [initialValues, setInitialValues] = useState({
@@ -17,6 +22,10 @@ const EnrollmentForm = () => {
     surgery: '',
     comment: '',
   });
+
+  const navigation = useNavigation();
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const calculateAge = (birthdate) => {
     const [day, month, year] = birthdate.split('-').map(Number);
@@ -73,7 +82,16 @@ const EnrollmentForm = () => {
           <TouchableOpacity
             key={index}
             style={styles.radioButtonContainer}
-            onPress={() => onSelect(option)}
+            onPress={() => {
+              onSelect(option);
+              if (option === 'Upload') {
+                setIsModalVisible(true);
+              } 
+              if (option === 'Scan Adhaar'){
+                navigation.navigate(Scan);
+                    
+              }}
+            }
           >
             <View style={styles.radioButton}>
               {selectedOption === option && <View style={styles.radioButtonSelected} />}
@@ -99,7 +117,7 @@ const EnrollmentForm = () => {
   const [bpChecked, setBpChecked] = useState(false);
   const [diabeticChecked, setDiabeticChecked] = useState(false);
   const [needHomeDeliveryChecked, setNeedHomeDeliveryChecked] = useState(false);
-  const options = ['Scan Adhaar', 'API', 'Manual'];
+  const options = ['Scan Adhaar', 'Upload', 'Manual'];
   const options1 = ['New Family Enrollment', 'Attach Member'];
 
   const makeApiCall = async (values) => {
@@ -192,6 +210,12 @@ const EnrollmentForm = () => {
                 <RadioButton options={options} selectedOption={selectedOption} onSelect={setSelectedOption} />
               </View>
             </View>
+            <Modal isVisible={isModalVisible} onBackdropPress={() => setIsModalVisible(false)}>
+              <View style={styles.modalContent}>
+                <UploadImage />
+                <Button title="Close" onPress={() => setIsModalVisible(false)} />
+              </View>
+            </Modal>
 
             <TextInput
               style={styles.input}
@@ -211,14 +235,33 @@ const EnrollmentForm = () => {
             />
             {errors.name && touched.name ? <Text style={styles.error}>{errors.name}</Text> : null}
 
-            <TextInput
-              style={styles.input}
-              onChangeText={handleChange('dob')}
-              onBlur={handleBlur('dob')}
-              value={values.dob}
-              placeholder="DOB"
-            />
+            <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+              <TextInput
+                style={styles.input}
+                placeholder="Date of Birth (DD-MM-YYYY)"
+                value={values.dob}
+                editable={false}
+                pointerEvents="none"
+              />
+            </TouchableOpacity>
             {errors.dob && touched.dob ? <Text style={styles.error}>{errors.dob}</Text> : null}
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={values.dob ? new Date(values.dob.split('-').reverse().join('-')) : new Date()}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) {
+                    const formattedDate = selectedDate.toLocaleDateString('en-GB').replace(/\//g, '-');
+                    handleChange('dob')(formattedDate);
+                    const age = calculateAge(formattedDate);
+                    handleChange('age')(age.toString());
+                  }
+                }}
+              />
+            )}
 
             <TextInput
               style={styles.input}
@@ -253,21 +296,21 @@ const EnrollmentForm = () => {
               onChangeText={handleChange('mobile_number')}
               onBlur={handleBlur('mobile_number')}
               value={values.mobile_number}
-              placeholder="Mob No"
-              keyboardType="phone-pad"
+              placeholder="Mobile Number"
+              keyboardType="numeric"
             />
             {errors.mobile_number && touched.mobile_number ? <Text style={styles.error}>{errors.mobile_number}</Text> : null}
 
-            <Checkbox label="Blood Pressure" value={bpChecked} onChange={setBpChecked} />
+            <Checkbox label="BP" value={bpChecked} onChange={setBpChecked} />
             <Checkbox label="Diabetic" value={diabeticChecked} onChange={setDiabeticChecked} />
-            <Checkbox label="Need Medicine Home Delivery?" value={needHomeDeliveryChecked} onChange={setNeedHomeDeliveryChecked} />
+            <Checkbox label="Need Home Delivery" value={needHomeDeliveryChecked} onChange={setNeedHomeDeliveryChecked} />
 
             <TextInput
               style={styles.input}
               onChangeText={handleChange('comorbidities')}
               onBlur={handleBlur('comorbidities')}
               value={values.comorbidities}
-              placeholder="Any other Comorbidities Diseases?"
+              placeholder="Comorbidities"
             />
             {errors.comorbidities && touched.comorbidities ? <Text style={styles.error}>{errors.comorbidities}</Text> : null}
 
@@ -276,7 +319,7 @@ const EnrollmentForm = () => {
               onChangeText={handleChange('surgery')}
               onBlur={handleBlur('surgery')}
               value={values.surgery}
-              placeholder="Any surgery done?"
+              placeholder="Surgery"
             />
             {errors.surgery && touched.surgery ? <Text style={styles.error}>{errors.surgery}</Text> : null}
 
@@ -288,12 +331,11 @@ const EnrollmentForm = () => {
               placeholder="Comment"
             />
             {errors.comment && touched.comment ? <Text style={styles.error}>{errors.comment}</Text> : null}
-
-
+              
             <View style={styles.buttonContainer}>
-              <Button onPress={handleSubmit} title="Submit & Exit" color="#007da5" />
-              <Button onPress={() => { /* handle save and next */ }} title="Save & Next Family Member" color="#007da5" />
-            </View>
+            <Button onPress={handleSubmit} title="Submit & Exit" color="#007da5" />
+            <Button onPress={() => { /* handle save and next */ }} title="Save & Next Family Member" color="#007da5" />
+              </View>
           </View>
         </ScrollView>
       )}
@@ -302,127 +344,105 @@ const EnrollmentForm = () => {
 };
 
 const styles = StyleSheet.create({
-  scrollViewContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-  },
   formContainer: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#f0f0f0',
+    padding: 16,
+    backgroundColor: '#fff',
   },
   headerContainer: {
     backgroundColor: '#007da5',
-    padding: 15,
+    padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 5,
-    marginBottom: 20,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: '#fff',
   },
-  section: {
-    marginBottom: 20,
-    flex: 1,
-    alignItems: 'center',
+  scrollViewContent: {
+    flexGrow: 1,
     justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
-  subtitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginVertical: 10,
-    color: '#555',
-  },
-  radioButtonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  radioButtonContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 10,
-  },
-  radioButton: {
-    height: 20,
-    width: 20,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#007da5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
-  radioButtonSelected: {
-    height: 10,
-    width: 10,
-    borderRadius: 5,
-    backgroundColor: '#007da5',
-  },
-  radioButtonText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  selectedOption: {
-    marginTop: 10,
-    fontSize: 16,
-    color: 'green',
-    fontWeight: 'bold',
+    paddingVertical: 20,
   },
   input: {
+    height: 40,
+    borderColor: '#ddd',
     borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: '#fff',
-    padding: 10,
     borderRadius: 5,
-    marginBottom: 10,
+    marginBottom: 12,
+    paddingHorizontal: 10,
   },
   error: {
+    fontSize: 12,
     color: 'red',
-    marginBottom: 10,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
+    marginBottom: 8,
   },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   checkbox: {
     width: 20,
     height: 20,
-    borderRadius: 5,
     borderWidth: 1,
-    borderColor: '#007da5',
-    alignItems: 'center',
+    borderColor: '#ddd',
+    marginRight: 8,
     justifyContent: 'center',
-    marginRight: 10,
+    alignItems: 'center',
   },
   checkboxChecked: {
     backgroundColor: '#007da5',
   },
   label: {
     fontSize: 16,
-    color: '#333',
+  },
+  section: {
+    marginVertical: 10,
+  },
+  radioButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  radioButtonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  radioButton: {
+    height: 20,
+    width: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  radioButtonSelected: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#007da5',
+  },
+  radioButtonText: {
+    fontSize: 16,
+  },
+  container: {
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
   },
 });
 

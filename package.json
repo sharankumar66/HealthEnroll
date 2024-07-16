@@ -10,7 +10,9 @@
     "test": "jest"
   },
   "dependencies": {
+    "@react-native-community/blur": "^4.4.0",
     "@react-native-community/cli": "^13.6.9",
+    "@react-native-community/datetimepicker": "^8.2.0",
     "@react-native-community/geolocation": "^3.2.1",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/native-stack": "^6.10.0",
@@ -18,7 +20,10 @@
     "react": "18.2.0",
     "react-native": "0.74.2",
     "react-native-camera": "^4.2.1",
+    "react-native-datepicker": "^1.7.2",
     "react-native-get-location": "^4.0.1",
+    "react-native-image-picker": "^7.1.2",
+    "react-native-modal": "^13.0.1",
     "react-native-permissions": "^4.1.5",
     "react-native-qrcode-scanner": "^1.5.5",
     "react-native-safe-area-context": "^4.10.7",

@@ -70,7 +70,7 @@ export default function Login() {
                         <TouchableOpacity
                             onPress={onPressLogin}
                             style={styles.loginBtn}>
-                            <Text style={styles.loginText}>LOGIN</Text>
+                            <Text style={styles.loginText}>LOG IN</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -140,5 +140,6 @@ const styles = StyleSheet.create({
     },
     loginText: {
         fontWeight: "bold",
+        fontSize: 20
     }
 });

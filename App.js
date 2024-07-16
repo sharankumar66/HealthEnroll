@@ -10,6 +10,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import BarcodeScanner from './Components/Camera';
 import Test from './Components/QrReader';
 import { ScrollView,StyleSheet} from 'react-native';
+import Appp from './Components/Add_image';
 
 
 const Stack = createNativeStackNavigator();
@@ -27,11 +28,13 @@ const App = () => {
       <Stack.Navigator initialRouterName="Login">
         <Stack.Screen name='Login' component={Login} />
         <Stack.Screen name='Form' component={Api} />
+        <Stack.Screen name='Scan' component={Scan} />
       </Stack.Navigator>
     </NavigationContainer>
     {/* <Login></Login> */}
     {/* <BarcodeScanner/> */}
     {/* <Test/> */}
+    
     </ScrollView>
     </>
 

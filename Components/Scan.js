@@ -8,7 +8,7 @@ class Scan extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            scan: false,
+            scan: true,
             ScanResult: false,
             result: null,
             name: "",

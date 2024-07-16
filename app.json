@@ -1,4 +1,11 @@
 {
   "name": "HealthEnrollmentApp",
-  "displayName": "HealthEnrollmentApp"
+  "displayName": "HealthEnrollmentApp",
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "a4b09f1e-4ff5-46e0-a8d1-6802a19e7f55"
+      }
+    }
+  }
 }
