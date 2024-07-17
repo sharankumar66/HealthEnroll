@@ -22,12 +22,12 @@ jobs:
           pod install
       - name: Build iOS
         run: |
-          xcodebuild -workspace ios/MyProject.xcworkspace -scheme MyProject -sdk iphoneos -configuration Release archive -archivePath $PWD/build/MyProject.xcarchive
+          xcodebuild -workspace ios/HealthEnrollmentApp.xcworkspace -scheme HealthEnrollmentApp -sdk iphoneos -configuration Release archive -archivePath $PWD/build/HealthEnrollmentApp.xcarchive
       - name: Export IPA
         run: |
-          xcodebuild -exportArchive -archivePath $PWD/build/MyProject.xcarchive -exportOptionsPlist ios/exportOptions.plist -exportPath $PWD/build
+          xcodebuild -exportArchive -archivePath $PWD/build/HealthEnrollmentApp.xcarchive -exportOptionsPlist ios/exportOptions.plist -exportPath $PWD/build
       - name: Upload IPA
         uses: actions/upload-artifact@v2
         with:
-          name: MyProject.ipa
+          name: HealthEnrollmentApp.ipa
           path: build/*.ipa
